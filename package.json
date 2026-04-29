@@ -1,0 +1,116 @@
+const mongoose = require('mongoose');
+
+const PropertySchema = new mongoose.Schema({
+  // Basic Info
+  title: {
+    type: String,
+    required: [true, 'Property title is required'],
+    trim: true,
+    maxlength: [200, 'Title cannot exceed 200 characters']
+  },
+  description: {
+    type: String,
+    required: [true, 'Description is required'],
+    maxlength: [2000, 'Description cannot exceed 2000 characters']
+  },
+  
+  // Price
+  price: {
+    type: Number,
+    required: [true, 'Price is required']
+  },
+  priceUnit: {
+    type: String,
+    enum: ['total', 'per_anna', 'per_sqft', 'per_month', 'per_year'],
+    default: 'total'
+  },
+  priceNepali: {
+    type: String // e.g. "15 Lakh", "1 Crore"
+  },
+  negotiable: {
+    type: Boolean,
+    default: false
+  },
+
+  // Location
+  location: {
+    address: { type: String, required: true },
+    city: { type: String, default: 'Kathmandu' },
+    district: { type: String, default: 'Kathmandu' },
+    area: { type: String }, // e.g. "Gokarneshwar", "Mulpani"
+    coordinates: {
+      lat: { type: Number },
+      lng: { type: Number }
+    },
+    mapUrl: { type: String }
+  },
+
+  // Property Details
+  type: {
+    type: String,
+    enum: ['land', 'house', 'apartment', 'commercial', 'office', 'warehouse', 'other'],
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ['sale', 'rent', 'lease', 'sold', 'rented'],
+    default: 'sale'
+  },
+  
+  // Size/Area
+  area: {
+    value: { type: Number },
+    unit: { type: String, enum: ['anna', 'ropani', 'sqft', 'sqm', 'dhur', 'bigha'], default: 'anna' }
+  },
+
+  // For House/Apartment
+  bedrooms: { type: Number, default: 0 },
+  bathrooms: { type: Number, default: 0 },
+  floors: { type: Number, default: 0 },
+  parking: { type: Boolean, default: false },
+  furnished: {
+    type: String,
+    enum: ['unfurnished', 'semi-furnished', 'fully-furnished'],
+    default: 'unfurnished'
+  },
+
+  // Features
+  features: [{
+    type: String
+    // e.g. "Road Access", "Water Supply", "Electricity", "Internet"
+  }],
+
+  // Media
+  images: [{
+    url: { type: String },
+    publicId: { type: String }, // Cloudinary public ID
+    isPrimary: { type: Boolean, default: false }
+  }],
+  videos: [{
+    url: { type: String },
+    publicId: { type: String }
+  }],
+
+  // Status
+  featured: { type: Boolean, default: false },
+  verified: { type: Boolean, default: false },
+  views: { type: Number, default: 0 },
+  
+  // Agent/Owner
+  agent: {
+    name: { type: String, default: 'Subha Bhumi Sewa' },
+    phone: { type: String, default: '9801306673' },
+    whatsapp: { type: String, default: '9801306673' }
+  },
+
+  // Meta
+  tags: [{ type: String }],
+  isActive: { type: Boolean, default: true }
+
+}, { timestamps: true });
+
+// Index for search
+PropertySchema.index({ 'location.city': 1, type: 1, status: 1, price: 1 });
+PropertySchema.index({ title: 'text', description: 'text', 'location.address': 'text', 'location.area': 'text' });
+
+module.exports = mongoose.model('Property', PropertySchema);
